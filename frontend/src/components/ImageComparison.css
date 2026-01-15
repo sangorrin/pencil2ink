@@ -172,16 +172,25 @@
 
 @media (max-width: 640px) {
   .comparison-container {
-    padding: 1.5rem;
+    padding: 1rem;
+    max-width: 100%;
+    border-radius: 0;
   }
 
   .comparison-title {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .comparison-slider {
+    aspect-ratio: unset;
+    min-height: 60vh;
+    margin-bottom: 1rem;
   }
 
   .btn {
-    min-width: 150px;
-    padding: 0.875rem 1.5rem;
-    font-size: 1rem;
+    min-width: 140px;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
   }
 }

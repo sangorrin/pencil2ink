@@ -27,19 +27,11 @@ When prompted:
 2. Set environment secrets:
 ```bash
 fly secrets set TAMS_URL="https://ap-east-1.tensorart.cloud"
-fly secrets set TAMS_APP_ID="your_app_id_here"
-fly secrets set PRIVATE_KEY_PEM="$(cat /path/to/private_key.pem)"
+fly secrets set TAMS_APP_ID=""
+fly secrets set PRIVATE_KEY_PEM="$(cat ../keys/private_key.pem)"
 ```
 
-Note: For multiline PRIVATE_KEY_PEM, use:
-```bash
-fly secrets set PRIVATE_KEY_PEM="$(cat <<'EOF'
------BEGIN PRIVATE KEY-----
-your_private_key_here
------END PRIVATE KEY-----
-EOF
-)"
-```
+The `fly.toml` is configured to run 1 machine (`min_machines_running = 1`). It will stop when idle and restart on demand.
 
 ## Deploy
 
@@ -72,12 +64,6 @@ fly logs
 Check app status:
 ```bash
 fly status
-```
-
-Scale app:
-```bash
-fly scale count 1  # Always keep 1 machine running
-fly scale count 0  # Scale to zero when not in use
 ```
 
 SSH into machine:

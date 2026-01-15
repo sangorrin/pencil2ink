@@ -11,6 +11,8 @@ from typing import Any, Union
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import Response
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from PIL import Image
 import httpx
 from dotenv import load_dotenv
@@ -41,7 +43,13 @@ INKIFY_LORA_ID = "920889236046011951"
 BASE_MODEL_ID = "879112449935019302"  # flux1-dev-kontext_fp8_scaled
 
 # Initialize FastAPI
-app = FastAPI(title="Pencil2Ink API", version="1.0.0")
+app = FastAPI(
+    title="Pencil2Ink API",
+    version="1.0.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None
+)
 
 
 def cleanup_expired_jobs():
@@ -436,3 +444,24 @@ async def download_image(job_id: str):
 async def health_check():
     """Health check endpoint"""
     return {"status": "ok"}
+
+
+# Mount static files for production (frontend build)
+static_path = Path(__file__).parent.parent / "frontend" / "dist"
+if static_path.exists():
+    app.mount("/assets", StaticFiles(directory=str(static_path / "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        """Serve frontend for all non-API routes"""
+        # If it's an API route, let FastAPI handle it
+        if full_path.startswith("api/"):
+            return {"error": "Not found"}
+
+        # Try to serve the requested file
+        file_path = static_path / full_path
+        if file_path.is_file():
+            return FileResponse(file_path)
+
+        # Otherwise serve index.html (SPA)
+        return FileResponse(static_path / "index.html")

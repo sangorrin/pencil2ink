@@ -23,28 +23,21 @@ echo -e "${GREEN}✓ Found .env file${NC}"
 
 # Build the development image
 echo ""
-echo -e "${BLUE}Building development Docker image...${NC}"
-docker build -f Dockerfile.local -t pencil2ink-dev .
+echo -e "${BLUE}Building Docker image...${NC}"
+docker build -f Dockerfile -t pencil2ink-dev .
 
 # Run the container
 echo ""
-echo -e "${BLUE}Starting development containers...${NC}"
-docker run --rm -it \
-  -p 8000:8000 \
-  -p 3000:3000 \
-  -v "$(pwd)/backend:/app/backend" \
-  -v "$(pwd)/frontend/src:/app/frontend/src" \
-  -v "$(pwd)/frontend/public:/app/frontend/public" \
-  -v "$(pwd)/frontend/index.html:/app/frontend/index.html" \
-  -v "$(pwd)/frontend/vite.config.ts:/app/frontend/vite.config.ts" \
-  -v "$(pwd)/.env:/app/.env:ro" \
-  pencil2ink-dev
-
-echo ""
 echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║          Servers Running! 🚀           ║${NC}"
+echo -e "${GREEN}║          Server Running! 🚀            ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
 echo ""
-echo -e "${BLUE}Frontend:${NC} http://localhost:3000"
-echo -e "${BLUE}Backend:${NC}  http://localhost:8000"
+echo -e "${BLUE}Application:${NC} http://localhost:8000"
+echo -e "${BLUE}Press Ctrl+C to stop${NC}"
 echo ""
+
+docker run --rm -it \
+  -p 8000:8000 \
+  -v "$(pwd)/backend:/app/backend" \
+  -v "$(pwd)/.env:/app/.env:ro" \
+  pencil2ink-dev

@@ -70,7 +70,7 @@ This will:
 ```bash
 ./dev.sh
 ```
-Uses `Dockerfile.local` with hot-reload for both frontend and backend.
+Builds and runs the Docker container with volume mounts and hot-reload for backend.
 
 ### Production Build
 
@@ -161,8 +161,7 @@ pencil2ink/
 │   │   └── main.tsx         # Entry point
 │   ├── package.json         # Node dependencies
 │   └── vite.config.ts       # Vite configuration
-├── Dockerfile               # Production multi-stage build
-├── Dockerfile.local         # Development with hot-reload
+├── Dockerfile               # Docker build for both local dev and production
 ├── dev.sh                   # Start local development
 └── .env                     # Environment variables (not in repo)
 ```

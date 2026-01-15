@@ -157,7 +157,7 @@ async def upload_image(file: UploadFile = File(...)):
                     "message": f"Failed to upload image: {put_response.text}"
                 }
 
-            print(f"\n=== Step 3: Creating img2img job ===")
+            print("\n=== Step 3: Creating img2img job ===")
             # Step 3: Create img2img job
             job_request_id = hashlib.md5(str(int(time.time())).encode()).hexdigest()
             job_data = {

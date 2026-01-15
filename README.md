@@ -4,14 +4,6 @@ Convert pencil sketches to clean inked images using AI.
 
 A web application that uses the TAMS/Tensor.art API with a custom-trained LoRA model to transform pencil drawings into professional inked artwork.
 
-## Features
-
-- Simple drag-and-drop interface for uploading pencil sketches
-- Real-time processing status updates
-- Before/after image comparison slider
-- One-click download of generated inked images
-- No user accounts or payments required (MVP)
-
 ## Technology Stack
 
 **Backend:**
@@ -20,8 +12,11 @@ A web application that uses the TAMS/Tensor.art API with a custom-trained LoRA m
 - In-memory job queue
 
 **Frontend:**
-- Vanilla HTML/CSS/JavaScript
-- Responsive design
+- React
+- Before/after image comparison slider
+- Simple drag-and-drop interface for uploading pencil sketch
+- One-click download of generated inked image
+- Real-time processing status updates
 
 **Hosting:**
 - fly.io (free tier)
@@ -30,7 +25,7 @@ A web application that uses the TAMS/Tensor.art API with a custom-trained LoRA m
 
 - **Format:** JPG or PNG only
 - **Max file size:** 1 MB
-- **Max dimensions:** 3000px × 3000px
+- **Max dimensions:** 1500x × 1500px
 
 ## Local deployment
 
@@ -56,7 +51,7 @@ export PRIVATE_KEY_PEM="$(cat ../keys/private_key.pem)"
 
 3. Build and run the Dockerfile
 ```bash
-TODO
+./dev.sh
 ```
 
 4. Open http://localhost:8000 in your browser

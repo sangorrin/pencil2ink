@@ -1,62 +1,98 @@
-# Pencil2Ink
+# Pencil2Ink 🎨
 
 Convert pencil sketches to clean inked images using AI.
 
 A web application that uses the TAMS/Tensor.art API with a custom-trained LoRA model to transform pencil drawings into professional inked artwork.
 
-## Technology Stack
+![Demo](https://img.shields.io/badge/Status-Production%20Ready-green)
+![Python](https://img.shields.io/badge/Python-3.14-blue)
+![React](https://img.shields.io/badge/React-18-blue)
 
-**Backend:**
-- FastAPI (Python 3.14)
-- TAMS/Tensor.art API integration
-- In-memory job queue
+## ✨ Features
 
-**Frontend:**
-- React
-- Before/after image comparison slider
-- Simple drag-and-drop interface for uploading pencil sketch
-- One-click download of generated inked image
-- Real-time processing status updates
+- 🎯 **Drag-and-drop** image upload interface
+- ⚡ **Real-time** processing status with progress tracking
+- 🔄 **Interactive** before/after comparison slider
+- 📥 **One-click** download of processed images
+- 🎨 **Clean UI** with smooth animations
+- 🐳 **Docker** ready for easy deployment
 
-**Hosting:**
-- fly.io (free tier)
-
-## Image Requirements
+## 📋 Image Requirements
 
 - **Format:** JPG or PNG only
 - **Max file size:** 1 MB
-- **Max dimensions:** 1500x × 1500px
+- **Max dimensions:** 1500px × 1500px
 
-## Local deployment
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
 
-- Python 3.14+
+- Docker
 - TAMS API credentials (App ID and private key)
 
-### Setup
+### 1. Clone the Repository
 
-1. Clone the repository:
 ```bash
 git clone https://github.com/sangorrin/pencil2ink.git
 cd pencil2ink
 ```
 
-2. Export environment variables (or copy .env.example to .env and write them)
+### 2. Create Environment File
+
+Create a `.env` file in the project root:
+
 ```bash
-export TAMS_URL="https://{YOUR_ZONE}.tensorart.cloud"
-export TAMS_APP_ID="YOUR_APP_ID"
-export PRIVATE_KEY_PEM="$(cat ../keys/private_key.pem)"
+TAMS_URL=https://ap-east-1.tensorart.cloud
+TAMS_APP_ID=your_app_id_here
+PRIVATE_KEY_PEM="-----BEGIN PRIVATE KEY-----
+your_private_key_here
+-----END PRIVATE KEY-----"
 ```
 
-3. Build and run the Dockerfile
+### 3. Run with Single Command
+
 ```bash
 ./dev.sh
 ```
 
-4. Open http://localhost:8000 in your browser
+This will:
+- ✅ Build the development Docker image
+- ✅ Start both frontend and backend in containers
+- ✅ Mount your code with hot-reload enabled
+- ✅ Frontend: http://localhost:3000
+- ✅ Backend: http://localhost:8000
 
-## Deployment to fly.io
+**Press Ctrl+C to stop**
+
+## 🐳 Docker Deployment
+
+### Local Development
+```bash
+./dev.sh
+```
+Uses `Dockerfile.local` with hot-reload for both frontend and backend.
+
+### Production Build
+
+Build the Docker image:
+```bash
+docker build -t pencil2ink .
+```
+
+Run the container:
+```bash
+docker run -p 8000:8000 \
+  -e TAMS_URL="https://ap-east-1.tensorart.cloud" \
+  -e TAMS_APP_ID="your_app_id" \
+  -e PRIVATE_KEY_PEM="-----BEGIN PRIVATE KEY-----
+your_private_key_here
+-----END PRIVATE KEY-----" \
+  pencil2ink
+```
+
+Access at http://localhost:8000
+
+## ☁️ Deploy to Fly.io
 
 ### Initial Setup
 
@@ -70,47 +106,133 @@ curl -L https://fly.io/install.sh | sh
 fly auth login
 ```
 
-3. Create the app:
+3. Launch the app:
 ```bash
-cd pencil2ink
 fly launch --no-deploy
 ```
 
-4. Set secrets
+4. Set secrets:
 ```bash
-fly secrets set TAMS_URL="https://{YOUR_ZONE}.tensorart.cloud"
+fly secrets set TAMS_URL="https://ap-east-1.tensorart.cloud"
 fly secrets set TAMS_APP_ID="YOUR_APP_ID"
-fly secrets set PRIVATE_KEY_PEM="$(cat ../private_key.pem)"
+fly secrets set PRIVATE_KEY_PEM="$(cat path/to/private_key.pem)"
 ```
 
-### Deploy
-
+5. Deploy:
 ```bash
 fly deploy
 ```
 
-### View logs
-
+6. View logs:
 ```bash
 fly logs
 ```
 
-## API Endpoints
+## 🛠️ Technology Stack
 
-- `POST /api/upload` - Upload pencil sketch image
-- `GET /api/status/{job_id}` - Get job processing status
-- `GET /api/download/{job_id}` - Download processed inked image
+### Backend
+- **FastAPI** - Modern Python web framework
+- **httpx** - Async HTTP client
+- **Pillow** - Image validation
+- **cryptography** - RSA signature generation for TAMS API
 
-## Project Structure
+### Frontend
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **Vite 7** - Fast build tool
+- **CSS3** - Animations and styling
+
+### AI Model
+- **Inkify LoRA** (Model ID: 920889236046011951)
+- **Base Model:** flux1-dev-kontext_fp8_scaled (879112449935019302)
+
+## 📁 Project Structure
 
 ```
-TODO
+pencil2ink/
+├── backend/
+│   ├── main.py              # FastAPI app with 3 endpoints
+│   ├── signature.py         # TAMS API authentication
+│   └── requirements.txt     # Python dependencies
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # React components
+│   │   ├── App.tsx          # Main app component
+│   │   └── main.tsx         # Entry point
+│   ├── package.json         # Node dependencies
+│   └── vite.config.ts       # Vite configuration
+├── Dockerfile               # Production multi-stage build
+├── Dockerfile.local         # Development with hot-reload
+├── dev.sh                   # Start local development
+└── .env                     # Environment variables (not in repo)
 ```
 
-## License
+## 🔌 API Endpoints
 
-See [LICENSE](LICENSE) file for details.
+### `POST /api/upload`
+Upload a pencil sketch image and create a conversion job.
 
-## Support
+**Request:** `multipart/form-data` with image file
 
-TODO
+**Response:**
+```json
+{
+  "status": "success",
+  "job_id": "uuid"
+}
+```
+
+### `GET /api/status/{job_id}`
+Get the status of a conversion job.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "job_status": "SUCCESS",
+  "progress": 100,
+  "message": "Completed!"
+}
+```
+
+### `GET /api/download/{job_id}`
+Download the converted inked image.
+
+**Response:** Image binary (PNG)
+
+## 🔒 Security
+
+- ✅ Environment variables for sensitive data
+- ✅ RSA-SHA256 signature authentication for TAMS API
+- ✅ Input validation (file type, size, dimensions)
+- ✅ No vulnerabilities in dependencies
+
+## 📝 License
+
+MIT License - See [LICENSE](LICENSE) file
+
+## 🙏 Acknowledgments
+
+- Powered by [TAMS/Tensor.art API](https://tensorart.cloud)
+- Custom Inkify LoRA model for pencil-to-ink conversion
+
+## 🐛 Troubleshooting
+
+### Docker won't start
+- Ensure Docker is installed and running
+- Check `.env` file exists with correct credentials
+- Try `docker system prune` to clean up old images
+
+### Can't access the app
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- Check both ports are not in use: `lsof -ti:8000` and `lsof -ti:3000`
+
+### Production Docker build fails
+- Ensure `.env` is NOT in the image (it's in `.dockerignore`)
+- Pass environment variables at runtime with `-e` flags
+- Check Docker has enough memory allocated
+
+---
+
+**Built with ❤️ for artists and creators**

@@ -1,0 +1,52 @@
+# Development Dockerfile - runs both frontend and backend
+FROM python:3.14-slim
+
+WORKDIR /app
+
+# Install Node.js
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy backend
+COPY backend/ ./backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt
+
+# Copy frontend
+COPY frontend/ ./frontend/
+WORKDIR /app/frontend
+RUN rm -rf node_modules package-lock.json && npm install
+WORKDIR /app
+
+# Expose ports
+EXPOSE 8000 3000
+
+# Start script that runs both servers
+COPY <<'EOF' /app/start-dev.sh
+#!/bin/bash
+set -e
+
+# Load environment variables from mounted .env file
+if [ -f /app/.env ]; then
+    set -a
+    source /app/.env
+    set +a
+fi
+
+echo "Starting backend on port 8000..."
+cd /app/backend
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload &
+
+echo "Starting frontend on port 3000..."
+cd /app/frontend
+npm run dev -- --host 0.0.0.0 &
+
+wait -n
+exit $?
+EOF
+
+RUN chmod +x /app/start-dev.sh
+
+CMD ["/app/start-dev.sh"]

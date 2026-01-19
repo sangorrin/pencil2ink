@@ -123,10 +123,48 @@ fly secrets set PRIVATE_KEY_PEM="$(cat path/to/private_key.pem)"
 fly deploy
 ```
 
-6. View logs:
+### Useful Fly.io Commands
+
+View logs in real-time:
 ```bash
 fly logs
 ```
+
+Check app status and running machines:
+```bash
+fly status
+```
+
+List all secrets:
+```bash
+fly secrets list
+```
+
+Update a secret:
+```bash
+fly secrets set TAMS_APP_ID="new_value"
+```
+
+SSH into a running machine:
+```bash
+fly ssh console
+```
+
+### Deployment Troubleshooting
+
+**Deployment fails:**
+- Check logs: `fly logs`
+- Verify secrets: `fly secrets list`
+- Test Docker build locally: `docker build -t test .`
+
+**App not responding:**
+- Check machine status: `fly status`
+- View error logs: `fly logs`
+- Restart machine: `fly machines restart <machine-id>`
+
+**Memory or CPU issues:**
+- Increase machine size in `fly.toml`
+- Check `fly status` for resource usage
 
 ## 🛠️ Technology Stack
 

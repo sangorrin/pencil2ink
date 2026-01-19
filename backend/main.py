@@ -73,8 +73,8 @@ def validate_image(file_bytes: bytes) -> tuple[bool, Union[str, dict[str, int]]]
         (False, "error message") if invalid
     """
     # Check file size
-    if len(file_bytes) > 1_000_000:  # 1 MB
-        return False, "File size must be under 1 MB"
+    if len(file_bytes) > 5 * 1024 * 1024:
+        return False, "File size must be under 5 MB"
 
     try:
         img = Image.open(BytesIO(file_bytes))
@@ -85,8 +85,8 @@ def validate_image(file_bytes: bytes) -> tuple[bool, Union[str, dict[str, int]]]
 
         # Check dimensions
         width, height = img.size
-        if width > 1500 or height > 1500:
-            return False, "Image dimensions must be under 1500×1500px"
+        if width > 3840 or height > 2160:
+            return False, "Image dimensions must be under 3840×2160px"
 
         return True, {"width": width, "height": height}
     except Exception as e:

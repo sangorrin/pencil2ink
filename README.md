@@ -20,8 +20,8 @@ A web application that uses the TAMS/Tensor.art API with a custom-trained LoRA m
 ## 📋 Image Requirements
 
 - **Format:** JPG or PNG only
-- **Max file size:** 1 MB
-- **Max dimensions:** 1500px × 1500px
+- **Max file size:** 5 MB
+- **Max dimensions:** 3840 x 2160
 
 ## 🚀 Quick Start (Local Development)
 
@@ -258,12 +258,10 @@ MIT License - See [LICENSE](LICENSE) file
 ### Docker won't start
 - Ensure Docker is installed and running
 - Check `.env` file exists with correct credentials
-- Try `docker system prune` to clean up old images
 
 ### Can't access the app
 - Frontend: http://localhost:3000
 - Backend: http://localhost:8000
-- Check both ports are not in use: `lsof -ti:8000` and `lsof -ti:3000`
 
 ### Production Docker build fails
 - Ensure `.env` is NOT in the image (it's in `.dockerignore`)

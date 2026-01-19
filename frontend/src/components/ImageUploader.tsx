@@ -16,12 +16,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadSuccess, o
     if (!['image/jpeg', 'image/png'].includes(file.type)) {
       return 'Only JPG and PNG images are supported';
     }
-
-    // Check file size (1MB)
-    if (file.size > 1_000_000) {
-      return 'File size must be under 1 MB';
-    }
-
     return null;
   };
 
@@ -32,8 +26,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadSuccess, o
 
       img.onload = () => {
         URL.revokeObjectURL(url);
-        if (img.width > 1500 || img.height > 1500) {
-          resolve('Image dimensions must be under 1500×1500px');
+        if (img.width > 3840 || img.height > 2160) {
+          resolve('Image dimensions must be under 3840×2160px');
         } else {
           resolve(null);
         }
@@ -48,6 +42,73 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadSuccess, o
     });
   };
 
+  // Resize image to fit within maxWidth/maxHeight preserving aspect ratio.
+  const resizeImageToMax = (
+    file: File,
+    maxWidth: number,
+    maxHeight: number,
+    quality = 0.92
+  ): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+
+        // If already within limits, return original file
+        if (width <= maxWidth && height <= maxHeight) {
+          resolve(file);
+          return;
+        }
+
+        const aspect = width / height;
+        let targetWidth = width;
+        let targetHeight = height;
+
+        if (width > maxWidth) {
+          targetWidth = maxWidth;
+          targetHeight = Math.round(targetWidth / aspect);
+        }
+        if (targetHeight > maxHeight) {
+          targetHeight = maxHeight;
+          targetWidth = Math.round(targetHeight * aspect);
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Canvas not supported'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to encode resized image'));
+              return;
+            }
+            const resizedFile = new File([blob], file.name, { type: file.type });
+            resolve(resizedFile);
+          },
+          file.type,
+          quality
+        );
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load image for resizing'));
+      };
+
+      img.src = url;
+    });
+  };
+
   const handleUpload = async (file: File) => {
     // Basic validation
     const basicError = validateFile(file);
@@ -56,11 +117,30 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadSuccess, o
       return;
     }
 
-    // Dimension validation
+    // Dimension and size validation: attempt to resize if needed
+    const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+    const MAX_W = 3840;
+    const MAX_H = 2160;
+
+    let uploadFile: File = file;
     const dimensionError = await validateImageDimensions(file);
-    if (dimensionError) {
-      onError(dimensionError);
-      return;
+
+    if (dimensionError || file.size > MAX_BYTES) {
+      try {
+        // Resize to fit within allowed dimensions while preserving aspect ratio
+        const resized = await resizeImageToMax(file, MAX_W, MAX_H);
+
+        // If resized still exceeds byte limit, fail (could implement progressive compression)
+        if (resized.size > MAX_BYTES) {
+          onError('Resized image still exceeds 5 MB');
+          return;
+        }
+
+        uploadFile = resized;
+      } catch (err) {
+        onError('Image dimensions exceed limits and could not be resized');
+        return;
+      }
     }
 
     setIsUploading(true);
@@ -68,7 +148,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadSuccess, o
     try {
       // Create form data
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', uploadFile);
 
       // Upload to backend
       const response = await fetch('/api/upload', {
@@ -84,7 +164,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadSuccess, o
         reader.onload = (e) => {
           onUploadSuccess(data.job_id, e.target?.result as string);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(uploadFile);
       } else {
         onError(data.message || 'Upload failed');
       }
@@ -164,7 +244,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadSuccess, o
             <p className="drop-text">
               <span className="drop-highlight">Click to upload</span> or drag and drop
             </p>
-            <p className="drop-hint">JPG or PNG • Max 1 MB • Max 1500×1500px</p>
+            <p className="drop-hint">JPG or PNG • Max 5 MB • Max 3840×2160px</p>
           </>
         )}
       </div>

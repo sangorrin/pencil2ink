@@ -49,8 +49,8 @@ PRIVATE_KEY_PEM=<your_private_key>
 - Call `cleanup_expired_jobs()` at start of upload endpoint
 
 **Image Validation:**
-- Client-side: format, size check
-- Server-side: format, size (1MB), dimensions (1500×1500px) using Pillow
+- Client-side: format validation (JPG/PNG) and client-side resizing/compression when needed to meet limits (5MB and max dimensions 3840×2160px)
+- Server-side: format validation and strict enforcement using Pillow. Server will reject files that still exceed the limits.
 
 ### Frontend State Management
 
@@ -99,10 +99,11 @@ fly status  # Check machine status
 No automated tests currently. Manual testing checklist:
 1. Upload valid JPG/PNG (should succeed)
 2. Upload invalid file (should error)
-3. Upload >1MB file (should error)
-4. Poll status during processing
-5. Download after completion
-6. Verify downloaded file is valid PNG
+3. Upload >5MB file (should error if client-side compression/resizing cannot reduce size)
+4. Upload very large-dimension image (e.g., 8000×6000) — verify frontend resizes to fit within 3840×2160 and upload succeeds if resulting size ≤5MB
+5. Poll status during processing
+6. Download after completion
+7. Verify downloaded file is valid PNG
 
 ## Troubleshooting
 
@@ -130,4 +131,4 @@ No automated tests currently. Manual testing checklist:
 
 ---
 
-**Last Updated:** January 2026
+**Last Updated:** 19 January 2026
